@@ -1,10 +1,8 @@
 package com.tibell.integrations.config;
 
 import com.rometools.rome.feed.synd.SyndEntry;
-import com.tibell.integrations.message.CommandMessage;
 import com.tibell.integrations.message.NewsFeed;
 import lombok.extern.slf4j.Slf4j;
-import netscape.javascript.JSObject;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,19 +17,17 @@ import org.springframework.integration.feed.inbound.FeedEntryMessageSource;
 import org.springframework.integration.file.dsl.Files;
 import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.handler.LoggingHandler;
-import org.springframework.http.HttpHeaders;
 import org.springframework.integration.http.dsl.Http;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.support.GenericMessage;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
-public class CommandMessageFlowConfig {
+public class rssFlowConfig {
 
     @Value("${slack.callback.url}")
     private String slackCallbackUrl;
@@ -55,7 +51,7 @@ public class CommandMessageFlowConfig {
     public IntegrationFlow slackEnterFlow() {
         log.info("Setting up SlackEnterFlow!");
         return IntegrationFlow.from("rssChannel")
-                .<NewsFeed, String>transform(t -> String.format("{ \"text\": \"%s: %s - %s\" } ", t.getPubDate().toString(), t.getTitle(), t.getDescription()))
+                .<NewsFeed, String>transform(t -> createSlackJsonPayload(t))
                 .handle(Http.outboundChannelAdapter(slackCallbackUrl)
                         .httpMethod(HttpMethod.POST)
                         .mappedRequestHeaders("content-type", "application/json")
@@ -64,7 +60,14 @@ public class CommandMessageFlowConfig {
                 .get();
     }
 
-
+    public String createSlackJsonPayload(NewsFeed newsFeed) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return String.format("{ \"text\": \"%s: %s - %s [%s]\" } ",
+                sdf.format(newsFeed.getPubDate()),
+                newsFeed.getTitle(),
+                newsFeed.getDescription(),
+                newsFeed.getLink()
+    }
 
 
     @Bean
@@ -78,8 +81,6 @@ public class CommandMessageFlowConfig {
                         .appendNewLine(true))
                 .get();
     }
-
-
 
 
     @Bean
