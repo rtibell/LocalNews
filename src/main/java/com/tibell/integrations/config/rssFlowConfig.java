@@ -66,7 +66,7 @@ public class rssFlowConfig {
                 sdf.format(newsFeed.getPubDate()),
                 newsFeed.getTitle(),
                 newsFeed.getDescription(),
-                newsFeed.getLink()
+                newsFeed.getLink());
     }
 
 
