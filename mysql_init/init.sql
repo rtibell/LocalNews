@@ -1,0 +1,3 @@
+GRANT ALL PRIVILEGES ON *.* TO 'rasse'@'%';
+#GRANT ALL PRIVILEGES ON app.* TO 'rasse'@'%' IDENTIFIED BY 'mypassword';
+FLUSH PRIVILEGES;%

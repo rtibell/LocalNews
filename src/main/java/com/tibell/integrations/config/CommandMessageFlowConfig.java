@@ -65,21 +65,7 @@ public class CommandMessageFlowConfig {
     }
 
 
-    @Bean
-    public IntegrationFlow comandRoutingFlow() {
-        // Routing for START, STOP, STATUS, MESSAGE, ERROR;
-        log.info("Setting up ComandRoutingFlow!");
-        return IntegrationFlow.from("inputChannel")
-                .<CommandMessage, CommandMessage.Command>route(CommandMessage::getCommand,
-                        mapping -> mapping
-                                .subFlowMapping(CommandMessage.Command.MESSAGE, sf -> sf.channel("fileChannel"))
-                                .subFlowMapping(CommandMessage.Command.ERROR, sf -> sf.channel("errorChannel"))
-                                //.subFlowMapping(CommandMessage.Command.STATUS, sf -> sf.channel("fileChannel"))
-                                //.subFlowMapping(CommandMessage.Command.START, sf -> sf.channel("fileChannel"))
-                                //.subFlowMapping(CommandMessage.Command.STOP, sf -> sf.channel("fileChannel"))
-                                .defaultSubFlowMapping(sf -> sf.channel("commandChannel")))
-                .get();
-    }
+
 
     @Bean
     public IntegrationFlow rssFileWriterFlow() {
@@ -93,48 +79,8 @@ public class CommandMessageFlowConfig {
                 .get();
     }
 
-    @Bean
-    public IntegrationFlow fileWriterFlow() {
-        log.info("Setting up FileWriterFlow!");
-        return IntegrationFlow.from("fileChannel")
-                .<CommandMessage, String>transform(t -> String.format("Command: %s, Message: %s, Payload: %s", t.getCommand(), t.getMessage(), t.getPayload()))
-                .handle(Files.outboundAdapter(new File("./tmp/sia5-files"))
-                        .fileExistsMode(FileExistsMode.APPEND)
-                        .appendNewLine(true))
-                .get();
-    }
 
-    @Bean
-    public IntegrationFlow errorFileWriterFlow() {
-        log.info("Setting up FileWriterFlow!");
-        return IntegrationFlow.from("errorChannel")
-                .<CommandMessage, String>transform(t -> String.format("Command: %s, Message: %s, Payload: %s", t.getCommand(), t.getMessage(), t.getPayload()))
-                .handle(Files.outboundAdapter(new File("./tmp/error-files"))
-                        .fileExistsMode(FileExistsMode.APPEND)
-                        .appendNewLine(true))
-                .get();
-    }
 
-    @Bean
-    public IntegrationFlow auditTrailFlow() {
-        log.info("Setting up AuditTrailFlow!");
-        return IntegrationFlow.from("commandChannel")
-                .<CommandMessage, String>transform(t -> String.format("%s\t %s\t %s\t %s", t.getTimestamp(), t.getCommand(), t.getMessage(), t.getPayload()))
-                .handle(Files.outboundAdapter(new File("./tmp/audit-trail"))
-                        .fileExistsMode(FileExistsMode.APPEND)
-                        .appendNewLine(true))
-                .get();
-    }
-
-    @Bean
-    public IntegrationFlow commandFlow() {
-        log.info("Setting up CommandFlow!");
-        return IntegrationFlow.from("commandChannel")
-                .<CommandMessage, String>handle(m -> {
-                    log.info("Command executor goes here! Paylod: {} Headers: {}", m.getPayload().toString(), m.getHeaders().toString());
-                })
-                .get();
-    }
 
     @Bean
     public MessageChannel inputChannel() {
@@ -148,9 +94,4 @@ public class CommandMessageFlowConfig {
         return new PublishSubscribeChannel();
     }
 
-    @Bean
-    public MessageChannel commandChannel() {
-        log.info("Setting up commandChannel!");
-        return new PublishSubscribeChannel();
-    }
 }

@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.tibell.spring</groupId>
-	<artifactId>integration</artifactId>
+	<artifactId>localnews</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>integration</name>
-	<description>Demo project for Spring Boot</description>
+	<name>LocalNews</name>
+	<description>Spring App reading rss feeds and distributes it via Slack</description>
 
 	<properties>
 		<java.version>21</java.version>
@@ -21,6 +21,7 @@
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<lombok.version>1.18.30</lombok.version>
+		<docker-maven-plugin.version>0.44.0</docker-maven-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -92,6 +93,26 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<images>
+						<image>
+							<name>tibell/localnews:${project.version}</name>
+							<build>
+								<dockerFileDir>${project.basedir}</dockerFileDir>
+							</build>
+<!--							<push>-->
+<!--								<registry>hub.docker.com</registry>-->
+<!--								<tag>${project.version}</tag>-->
+<!--							</push>-->
+						</image>
+					</images>
 				</configuration>
 			</plugin>
 		</plugins>
