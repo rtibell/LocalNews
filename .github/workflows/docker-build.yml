@@ -41,8 +41,8 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: tibell/localnews:latest
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
-        #platforms: linux/amd64,linux/arm64
+        #platforms: linux/amd64,linux/arm64,linux/arm/v7
+        platforms: linux/amd64,linux/arm64
         
     - name: Clean up
       run: docker system prune -af
