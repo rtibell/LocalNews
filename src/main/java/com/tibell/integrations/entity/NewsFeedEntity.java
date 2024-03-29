@@ -31,14 +31,17 @@ public class NewsFeedEntity {
     private String titleEx;
     @Column(nullable = false)
     private String etag;
+    private String source;
 
-    public NewsFeedEntity(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String etag) {
+
+    public NewsFeedEntity(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String etag, String source) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.pubDate = pubDate;
         this.category = category;
         this.titleEx = titleEx;
+        this.source = source;
         this.etag = etag;
     }
 }

@@ -1,9 +1,12 @@
 package com.tibell.integrations.message;
 
+import com.rometools.rome.feed.synd.SyndEntry;
+import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.integration.annotation.Default;
 
 import java.util.Date;
 import java.util.List;
@@ -18,21 +21,41 @@ public class NewsFeed {
     private final List<String> category;
     private final String titleEx;
     private final String etag;
+    private final String source;
 
-    public NewsFeed(String title, String description, String link, Date pubDate, List<String> category, String titleEx) {
+    public NewsFeed(SyndEntry entry, String source) {
+        this.title = entry.getTitle();
+        if (entry.getDescription() != null) this.description = entry.getDescription().getValue();
+        else this.description = "";
+        this.link = entry.getLink();
+        this.pubDate = entry.getPublishedDate();
+        if (entry.getCategories() != null) this.category = entry.getCategories().stream().map(Object::toString).toList();
+        else this.category = List.of();
+        if (entry.getTitleEx() != null) this.titleEx = entry.getTitleEx().getValue();
+        else this.titleEx = "";
+        this.source = source;
+        this.etag = NewsFeed.calcETAG(title, link, source);
+        log.info("NewsFeed Etag: {}", this.etag);
+    }
+
+    @Default
+    public NewsFeed(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String source) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.pubDate = pubDate;
         this.category = category;
         this.titleEx = titleEx;
-        this.etag = NewsFeed.calcETAG(title, link);
+        this.source = source;
+        this.etag = NewsFeed.calcETAG(title, link, source);
         log.info("Etag: {}", this.etag);
     }
 
-    public static String calcETAG(String title, String link) {
+    public static String calcETAG(String title, String link, String source) {
         return "" +
                 Integer.toHexString(title.hashCode()) +
-                Integer.toHexString(link.hashCode());
+                Integer.toHexString(link.hashCode()) +
+                Integer.toHexString(source.hashCode())
+                ;
     }
 }

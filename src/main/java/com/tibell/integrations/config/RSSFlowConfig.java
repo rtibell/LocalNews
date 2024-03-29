@@ -43,12 +43,6 @@ public class RSSFlowConfig {
     @Autowired(required = true)
     private NewsFeedService newsFeedService;
 
-//    @Autowired(required=true)
-//    private NewsFeedRepository newsFeedRepository;
-
-//    @Autowired(required=true)
-//    private NewsFeedMapper newsFeedMapper;
-
     @Bean
     public NewsFeedMapper newsFeedMapper() {
         return NewsFeedMapper.INSTANCE;
@@ -58,29 +52,28 @@ public class RSSFlowConfig {
         return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper);
     }
 
-//    @Bean
-//    public NewsFeedRepository newsFeedRepository() {
-//        return new NewsFeedRepository();
-//    }
-//    @Autowired
-//    public RSSFlowConfig(NewsFeedService newsFeedService) {
-//        this.newsFeedService = newsFeedService;
-//    }
+    @Bean
+    public IntegrationFlow svdRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up SVD RSSReaderFlow!", "rss-feed-svd", "SVD");
+        return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd","SVD");
+    }
 
     @Bean
-    public IntegrationFlow rssReaderFlow() throws MalformedURLException {
-        log.info("Setting up RSSReaderFlow!");
-        return IntegrationFlow.from(new FeedEntryMessageSource(new UrlResource("https://www.svd.se/?service=rss"), "rss-feed-svd"), e -> e.poller(Pollers.fixedDelay(120 * 1000)))
-                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(
-                        t.getTitle(),
-                        t.getDescription().getValue(),
-                        t.getLink(),
-                        t.getPublishedDate(),
-                        t.getCategories().stream().map(x -> x.getName()).collect(Collectors.toList()),
-                        t.getTitleEx().getValue()))
-                .filter(newsFeedService::saveNewsFeed)
-                .channel("rssChannel")
-                .get();
+    public IntegrationFlow aftonbladedNewsRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up Aftonbladed News RSSReaderFlow!");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/senastenytt/", "rss-feed-aftonbladet-news", "Aftonbladet-News");
+    }
+
+    @Bean
+    public IntegrationFlow aftonbladedEntertRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up Aftonbladed News RSSReaderFlow!");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/nojesbladet/", "rss-feed-aftonbladet-entertainment", "Aftonbladet-Entertainment");
+    }
+
+    @Bean
+    public IntegrationFlow aftonbladedCultureRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up Aftonbladed News RSSReaderFlow!");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/kultur/", "rss-feed-aftonbladet-culture", "Aftonbladet-Culture");
     }
 
     @Bean
@@ -131,4 +124,20 @@ public class RSSFlowConfig {
         return new PublishSubscribeChannel();
     }
 
+    public IntegrationFlow genericRSSReaderFlow(String url, String metaKey, String source) throws MalformedURLException {
+        return IntegrationFlow.from(new FeedEntryMessageSource(new UrlResource(url), metaKey), e -> e.poller(Pollers.fixedDelay(67 * 1000)))
+//                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(
+//                        t.getTitle(),
+//                        t.getDescription().getValue(),
+//                        t.getLink(),
+//                        t.getPublishedDate(),
+//                        t.getCategories().stream().map(x -> x.getName()).collect(Collectors.toList()),
+//                        t.getTitleEx().getValue(),
+//                        source))
+                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(t, source))
+                .enrichHeaders(h -> h.header("source", source, true)) // Add etag header to message
+                .filter(newsFeedService::saveNewsFeed)
+                .channel("rssChannel")
+                .get();
+    }
 }
