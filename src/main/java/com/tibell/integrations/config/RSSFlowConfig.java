@@ -1,16 +1,23 @@
 package com.tibell.integrations.config;
 
 import com.rometools.rome.feed.synd.SyndEntry;
+import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
+import com.tibell.integrations.repository.NewsFeedRepository;
+import com.tibell.integrations.service.NewsFeedService;
+import com.tibell.integrations.service.impl.NewsFeedServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpMethod;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.Pollers;
 import org.springframework.integration.feed.inbound.FeedEntryMessageSource;
@@ -27,10 +34,38 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
-public class rssFlowConfig {
+@EnableIntegration
+public class RSSFlowConfig {
 
     @Value("${slack.callback.url}")
     private String slackCallbackUrl;
+
+    @Autowired(required = true)
+    private NewsFeedService newsFeedService;
+
+//    @Autowired(required=true)
+//    private NewsFeedRepository newsFeedRepository;
+
+//    @Autowired(required=true)
+//    private NewsFeedMapper newsFeedMapper;
+
+    @Bean
+    public NewsFeedMapper newsFeedMapper() {
+        return NewsFeedMapper.INSTANCE;
+    }
+    @Bean
+    public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper) {
+        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper);
+    }
+
+//    @Bean
+//    public NewsFeedRepository newsFeedRepository() {
+//        return new NewsFeedRepository();
+//    }
+//    @Autowired
+//    public RSSFlowConfig(NewsFeedService newsFeedService) {
+//        this.newsFeedService = newsFeedService;
+//    }
 
     @Bean
     public IntegrationFlow rssReaderFlow() throws MalformedURLException {
@@ -43,6 +78,7 @@ public class rssFlowConfig {
                         t.getPublishedDate(),
                         t.getCategories().stream().map(x -> x.getName()).collect(Collectors.toList()),
                         t.getTitleEx().getValue()))
+                .filter(newsFeedService::saveNewsFeed)
                 .channel("rssChannel")
                 .get();
     }
