@@ -12,7 +12,7 @@ EXPOSE 8080
 #ENV MYSQL_HOST=192.168.86.253 MYSQL_PORT=3306 MYSQL_DATABASE=dev
 
 # Add the application's jar to the container
-ADD target/localnews-0.0.1-SNAPSHOT.jar myapplication.jar
+ADD target/localnews-0.1.1-SNAPSHOT.jar myapplication.jar
 
 # Run the jar file
 ENTRYPOINT ["java", "-jar", "/myapplication.jar"]%
