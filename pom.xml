@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.tibell.spring</groupId>
 	<artifactId>localnews</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<name>LocalNews</name>
 	<description>Spring App reading rss feeds and distributes it via Slack</description>
 
