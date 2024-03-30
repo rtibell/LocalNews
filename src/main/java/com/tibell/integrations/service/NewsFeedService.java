@@ -9,5 +9,6 @@ public interface NewsFeedService {
 
 
     public Boolean checkExists(String etag);
+    public Boolean checkUnique(NewsFeed newsFeed);
     public Boolean saveNewsFeed(NewsFeed newsFeed);
 }

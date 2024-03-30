@@ -29,6 +29,10 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     }
 
     @Override
+    public Boolean checkUnique(NewsFeed newsFeed) { return newsFeedRepository.findNewsFeedByEtag2(newsFeed.getEtag2()).size() >= 1; }
+
+
+    @Override
     public Boolean saveNewsFeed(NewsFeed newsFeed) {
         if (checkExists(newsFeed.getEtag())) {
             return Boolean.FALSE;

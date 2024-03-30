@@ -22,6 +22,7 @@ public class NewsFeed {
     private final List<String> category;
     private final String titleEx;
     private final String etag;
+    private final String etag2;
     private final String source;
 
     public NewsFeed(SyndEntry entry, String source) {
@@ -36,6 +37,7 @@ public class NewsFeed {
         else this.titleEx = "";
         this.source = source;
         this.etag = NewsFeed.calcETAG(title, link, source);
+        this.etag2 = NewsFeed.calcETAG2(title);
         log.info("NewsFeed Etag: {}", this.etag);
     }
 
@@ -49,6 +51,7 @@ public class NewsFeed {
         this.titleEx = titleEx;
         this.source = source;
         this.etag = NewsFeed.calcETAG(title, link, source);
+        this.etag2 = NewsFeed.calcETAG2(title);
         log.info("Etag: {}", this.etag);
     }
 
@@ -58,6 +61,10 @@ public class NewsFeed {
                 Integer.toHexString(link.hashCode()) +
                 Integer.toHexString(source.hashCode())
                 ;
+    }
+
+    public static String calcETAG2(String title) {
+        return "" + Integer.toHexString(title.hashCode());
     }
 
     public static String cleanUp(String s) {

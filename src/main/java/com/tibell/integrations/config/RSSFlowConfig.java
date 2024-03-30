@@ -33,12 +33,15 @@ import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
 @EnableIntegration
 public class RSSFlowConfig {
+
+    private Random rnd = new Random();
 
     @Value("${slack.callback.url}")
     private String slackCallbackUrl;
@@ -64,51 +67,60 @@ public class RSSFlowConfig {
 
     @Bean
     public IntegrationFlow svdRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up SVD RSSReaderFlow!", "rss-feed-svd", "SVD");
         return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd", "SVD");
     }
 
     @Bean
     public IntegrationFlow dnRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up DN RSSReaderFlow!", "rss-feed-dn", "DN");
         return genericRSSReaderFlow("https://www.dn.se/rss/", "rss-feed-dn", "DN");
     }
 
     @Bean
     public IntegrationFlow expressenRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up Expressen RSSReaderFlow!", "rss-feed-expressen", "Expressen");
         return genericRSSReaderFlow("https://feeds.expressen.se/nyheter/", "rss-feed-expressen", "Expressen");
     }
 
     @Bean
     public IntegrationFlow svtRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up SVT RSSReaderFlow!", "rss-feed-svt", "SVT");
         return genericRSSReaderFlow("https://www.svt.se/nyheter/rss.xml", "rss-feed-svt", "SVT");
     }
 
     @Bean
     public IntegrationFlow aftonbladedNewsRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up Aftonbladed News RSSReaderFlow!");
         return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/senastenytt/", "rss-feed-aftonbladet-news", "Aftonbladet-News");
     }
 
     @Bean
     public IntegrationFlow aftonbladedEntertRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up Aftonbladed News RSSReaderFlow!");
         return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/nojesbladet/", "rss-feed-aftonbladet-entertainment", "Aftonbladet-Entertainment");
     }
 
     @Bean
     public IntegrationFlow aftonbladedCultureRSSReaderFlow() throws MalformedURLException {
-        log.info("Setting up Aftonbladed News RSSReaderFlow!");
         return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/kultur/", "rss-feed-aftonbladet-culture", "Aftonbladet-Culture");
     }
+
+    @Bean
+    public IntegrationFlow wpPolicticsRSSReaderFlow() throws MalformedURLException {
+        return genericRSSReaderFlow("https://www.di.se/rss", "rss-feed-di", "DI");
+    }
+
+    @Bean
+    public IntegrationFlow nytTechRSSReaderFlow() throws MalformedURLException {
+        return genericRSSReaderFlow("https://www.sydsvenskan.se/rss.xml", "rss-feed-nyt-sydsvenskan", "SydSvenskan");
+    }
+
+//    @Bean
+//    public IntegrationFlow nytWorldRSSReaderFlow() throws MalformedURLException {
+//        return genericRSSReaderFlow("https://rss.nytimes.com/services/xml/rss/nyt/World.xml", "rss-feed-nyt-world", "NewYorkTimes-World");
+//    }
 
     @Bean
     public IntegrationFlow slackEnterFlow() {
         log.info("Setting up SlackEnterFlow!");
         return IntegrationFlow.from("rssChannel")
                 .<NewsFeed, String>transform(t -> createSlackJsonPayload(t))
+                .log(LoggingHandler.Level.INFO, "slack", m -> m.getPayload().toString())
                 .handle(Http.outboundChannelAdapter(slackCallbackUrl)
                         .httpMethod(HttpMethod.POST)
                         .mappedRequestHeaders("content-type", "application/json")
@@ -135,13 +147,13 @@ public class RSSFlowConfig {
         return IntegrationFlow.from("rssChannel")
                 .enrichHeaders(headers)
                 .<NewsFeed, String>transform(t -> createDiscordJsonPayload(t))
+                .log(LoggingHandler.Level.INFO, "discord", m -> m.getPayload().toString())
                 .handle(Http.outboundChannelAdapter(discordCallbackUrl)
                         .httpMethod(HttpMethod.POST)
                         .mappedRequestHeaders("Authorization", "content-type")
                         .extractPayload(true)
                         .expectedResponseType(String.class)
                 )
-                .log(LoggingHandler.Level.INFO)
                 .get();
     }
 
@@ -158,7 +170,7 @@ public class RSSFlowConfig {
     @Bean
     public IntegrationFlow rssFileWriterFlow() {
         log.info("Setting up RSSFileWriterFlow!");
-        return IntegrationFlow.from("rssChannel")
+        return IntegrationFlow.from("fileChannel")
                 .<Object, String>transform(t -> new JSONObject(t).toString())
                 .log(LoggingHandler.Level.INFO, "rss-file", m -> m.getPayload().toString())
                 .handle(Files.outboundAdapter(new File("./tmp/rss-files"))
@@ -181,18 +193,13 @@ public class RSSFlowConfig {
     }
 
     public IntegrationFlow genericRSSReaderFlow(String url, String metaKey, String source) throws MalformedURLException {
-        return IntegrationFlow.from(new FeedEntryMessageSource(new UrlResource(url), metaKey), e -> e.poller(Pollers.fixedDelay(67 * 1000)))
-//                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(
-//                        t.getTitle(),
-//                        t.getDescription().getValue(),
-//                        t.getLink(),
-//                        t.getPublishedDate(),
-//                        t.getCategories().stream().map(x -> x.getName()).collect(Collectors.toList()),
-//                        t.getTitleEx().getValue(),
-//                        source))
+        int rndTime = rnd.nextInt(25) + 67;
+        log.info("Setting up {} RSSReaderFlow! MetaKey={} delay={}", source, metaKey, rndTime);
+        return IntegrationFlow.from(new FeedEntryMessageSource(new UrlResource(url), metaKey), e -> e.poller(Pollers.fixedDelay(rndTime * 1000)))
                 .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(t, source))
                 .enrichHeaders(h -> h.header("source", source, true)) // Add etag header to message
                 .filter(newsFeedService::saveNewsFeed)
+                .filter(newsFeedService::checkUnique)
                 .channel("rssChannel")
                 .get();
     }
