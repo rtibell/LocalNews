@@ -69,6 +69,24 @@ public class RSSFlowConfig {
     }
 
     @Bean
+    public IntegrationFlow dnRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up DN RSSReaderFlow!", "rss-feed-dn", "DN");
+        return genericRSSReaderFlow("https://www.dn.se/rss/", "rss-feed-dn", "DN");
+    }
+
+    @Bean
+    public IntegrationFlow expressenRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up Expressen RSSReaderFlow!", "rss-feed-expressen", "Expressen");
+        return genericRSSReaderFlow("https://feeds.expressen.se/nyheter/", "rss-feed-expressen", "Expressen");
+    }
+
+    @Bean
+    public IntegrationFlow svtRSSReaderFlow() throws MalformedURLException {
+        log.info("Setting up SVT RSSReaderFlow!", "rss-feed-svt", "SVT");
+        return genericRSSReaderFlow("https://www.svt.se/nyheter/rss.xml", "rss-feed-svt", "SVT");
+    }
+
+    @Bean
     public IntegrationFlow aftonbladedNewsRSSReaderFlow() throws MalformedURLException {
         log.info("Setting up Aftonbladed News RSSReaderFlow!");
         return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/senastenytt/", "rss-feed-aftonbladet-news", "Aftonbladet-News");
