@@ -11,6 +11,8 @@ services:
       spring.datasource.username: rasse
       spring.datasource.password: mypassword
       slack.callback.url: ${SLACK_CALLBACK_URL}
+      discord.callback.url: ${DISCORD_CALLBACK_URL}
+      discord.callback.token: ${DISCORD_CALLBACK_TOKEN}
     networks:
       - local-sub-net
     depends_on:
