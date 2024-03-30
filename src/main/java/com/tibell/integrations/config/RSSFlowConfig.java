@@ -7,6 +7,7 @@ import com.tibell.integrations.repository.NewsFeedRepository;
 import com.tibell.integrations.service.NewsFeedService;
 import com.tibell.integrations.service.impl.NewsFeedServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.aopalliance.aop.Advice;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,8 @@ import org.springframework.messaging.MessageChannel;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,6 +43,12 @@ public class RSSFlowConfig {
     @Value("${slack.callback.url}")
     private String slackCallbackUrl;
 
+    @Value("${discord.callback.url}")
+    private String discordCallbackUrl;
+
+    @Value("${discord.callback.token}")
+    private String discordCallbackToken;
+
     @Autowired(required = true)
     private NewsFeedService newsFeedService;
 
@@ -47,6 +56,7 @@ public class RSSFlowConfig {
     public NewsFeedMapper newsFeedMapper() {
         return NewsFeedMapper.INSTANCE;
     }
+
     @Bean
     public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper) {
         return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper);
@@ -55,7 +65,7 @@ public class RSSFlowConfig {
     @Bean
     public IntegrationFlow svdRSSReaderFlow() throws MalformedURLException {
         log.info("Setting up SVD RSSReaderFlow!", "rss-feed-svd", "SVD");
-        return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd","SVD");
+        return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd", "SVD");
     }
 
     @Bean
@@ -92,6 +102,34 @@ public class RSSFlowConfig {
     public String createSlackJsonPayload(NewsFeed newsFeed) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return String.format("{ \"text\": \"%s: %s - %s [%s]\" } ",
+                sdf.format(newsFeed.getPubDate()),
+                newsFeed.getTitle(),
+                newsFeed.getDescription(),
+                newsFeed.getLink());
+    }
+
+    @Bean
+    public IntegrationFlow discordEnterFlow() {
+        log.info("Setting up DiscordEnterFlow!");
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Authorization", "Bot " + discordCallbackToken);
+        headers.put("content-type", "application/json");
+        return IntegrationFlow.from("rssChannel")
+                .enrichHeaders(headers)
+                .<NewsFeed, String>transform(t -> createDiscordJsonPayload(t))
+                .handle(Http.outboundChannelAdapter(discordCallbackUrl)
+                        .httpMethod(HttpMethod.POST)
+                        .mappedRequestHeaders("Authorization", "content-type")
+                        .extractPayload(true)
+                        .expectedResponseType(String.class)
+                )
+                .log(LoggingHandler.Level.INFO)
+                .get();
+    }
+
+    public String createDiscordJsonPayload(NewsFeed newsFeed) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return String.format("{ \"content\": \"%s\", \"tts\": false, \"embeds\": [{\"title\": \"%s\", \"description\": \"%s\", \"url\": \"%s\", \"color\": 5814783 }] } ",
                 sdf.format(newsFeed.getPubDate()),
                 newsFeed.getTitle(),
                 newsFeed.getDescription(),

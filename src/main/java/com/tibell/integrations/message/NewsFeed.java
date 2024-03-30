@@ -1,5 +1,6 @@
 package com.tibell.integrations.message;
 
+import com.rometools.rome.feed.synd.SyndCategory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import lombok.Builder;
 import lombok.Data;
@@ -24,14 +25,14 @@ public class NewsFeed {
     private final String source;
 
     public NewsFeed(SyndEntry entry, String source) {
-        this.title = entry.getTitle();
-        if (entry.getDescription() != null) this.description = entry.getDescription().getValue();
+        this.title = NewsFeed.cleanUp(entry.getTitle());
+        if (entry.getDescription() != null)  this.description = NewsFeed.cleanUp(entry.getDescription().getValue());
         else this.description = "";
         this.link = entry.getLink();
         this.pubDate = entry.getPublishedDate();
-        if (entry.getCategories() != null) this.category = entry.getCategories().stream().map(Object::toString).toList();
+        if (entry.getCategories() != null) this.category = entry.getCategories().stream().map(SyndCategory::getName).toList();
         else this.category = List.of();
-        if (entry.getTitleEx() != null) this.titleEx = entry.getTitleEx().getValue();
+        if (entry.getTitleEx() != null)  this.titleEx = NewsFeed.cleanUp(entry.getTitleEx().getValue());
         else this.titleEx = "";
         this.source = source;
         this.etag = NewsFeed.calcETAG(title, link, source);
@@ -57,5 +58,11 @@ public class NewsFeed {
                 Integer.toHexString(link.hashCode()) +
                 Integer.toHexString(source.hashCode())
                 ;
+    }
+
+    public static String cleanUp(String s) {
+        return s.replaceAll("\"", "\\\"")
+                .replaceAll("<p>", "")
+                .replaceAll("</p>", " ");
     }
 }
