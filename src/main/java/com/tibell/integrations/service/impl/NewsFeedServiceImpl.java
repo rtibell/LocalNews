@@ -1,11 +1,14 @@
 package com.tibell.integrations.service.impl;
 
+import com.tibell.integrations.mapper.NewsFeedEventMapper;
 import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
 import com.tibell.integrations.repository.NewsFeedRepository;
+import com.tibell.integrations.service.KafkaNewsFeedService;
 import com.tibell.integrations.service.NewsFeedService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +19,18 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     private NewsFeedRepository newsFeedRepository;
 
     //@Autowired
+    private NewsFeedEventMapper newsFeedEventMapper;
     private NewsFeedMapper newsFeedMapper;
 
-    public NewsFeedServiceImpl(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper) {
+    @Autowired
+    private KafkaNewsFeedService kafkaNewsFeedService;
+
+    public NewsFeedServiceImpl(NewsFeedRepository newsFeedRepository,
+                               NewsFeedMapper newsFeedMapper,
+                               NewsFeedEventMapper newsFeedEventMapper) {
         this.newsFeedRepository = newsFeedRepository;
         this.newsFeedMapper = newsFeedMapper;
+        this.newsFeedEventMapper = newsFeedEventMapper;
     }
 
     @Override
@@ -37,6 +47,9 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         if (checkExists(newsFeed.getEtag())) {
             return Boolean.FALSE;
         }
+
+        kafkaNewsFeedService.sendNewsFeedToKafka(newsFeedEventMapper.toNewsFeedEvent(newsFeed));
+
         log.info("Saving NewsFeed: {}", newsFeed.toString());
         newsFeedRepository.save(newsFeedMapper.toNewsFeedEntity(newsFeed));
         return Boolean.TRUE;

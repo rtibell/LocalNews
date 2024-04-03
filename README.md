@@ -44,3 +44,6 @@ mysql> create user 'springuser'@'%' identified by 'ThePassword'; -- Creates the 
 mysql> grant all on db_example.* to 'springuser'@'%'; -- Gives all privileges to the new user on the newly created database
 
 ```
+
+## Json Schema
+https://json-schema.org/understanding-json-schema/reference

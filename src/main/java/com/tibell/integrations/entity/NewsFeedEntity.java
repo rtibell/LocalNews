@@ -14,7 +14,7 @@ import java.util.UUID;
 @Slf4j
 @Data
 @Entity
-@Table(name = "news_feed", indexes = {@Index(columnList = "etag")})
+@Table(name = "news_feed", indexes = {@Index(columnList = "etag"), @Index(columnList = "etag2")})
 @NoArgsConstructor
 public class NewsFeedEntity {
     @Id
@@ -24,15 +24,28 @@ public class NewsFeedEntity {
 
     @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false, length = 8192)
     private String description;
+
     private String link;
+
     private Date pubDate;
-    private List<String> category;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<NewsCategoryEntity> category;
+
     private String titleEx;
+
     @Column(nullable = false)
     private String etag;
+
+    @Column(nullable = false)
     private String etag2;
+
     private String source;
+
+    @Column(nullable = false)
     private Date creation_date = new Date();
 
 
@@ -41,10 +54,12 @@ public class NewsFeedEntity {
         this.description = description;
         this.link = link;
         this.pubDate = pubDate;
-        this.category = category;
         this.titleEx = titleEx;
         this.source = source;
         this.etag = etag;
         this.etag2 = etag2;
+        for (String cat : category) {
+            this.category.add(new NewsCategoryEntity(cat));
+        }
     }
 }

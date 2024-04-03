@@ -1,6 +1,7 @@
 package com.tibell.integrations.config;
 
 import com.rometools.rome.feed.synd.SyndEntry;
+import com.tibell.integrations.mapper.NewsFeedEventMapper;
 import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
 import com.tibell.integrations.repository.NewsFeedRepository;
@@ -61,8 +62,13 @@ public class RSSFlowConfig {
     }
 
     @Bean
-    public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper) {
-        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper);
+    public NewsFeedEventMapper newsFeedEventMapper() {
+        return NewsFeedEventMapper.INSTANCE;
+    }
+
+    @Bean
+    public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper, NewsFeedEventMapper newsFeedEventMapper) {
+        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper, newsFeedEventMapper);
     }
 
     @Bean

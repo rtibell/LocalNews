@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://tibell.com/LocalNews.schema.json",
+  "title": "NewsFeedEvent",
+  "description": "NewsFeed entity.",
+  "type": "object",
+  "javaType": "com.tibell.integrations.event.NewsFeedEvent",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the news feed."
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the news feed."
+    },
+    "link": {
+      "type": "string",
+      "description": "The link of the news feed."
+    },
+    "pubDate": {
+      "type": "string",
+      "description": "The publication date of the news feed."
+    },
+    "category": {
+      "type": "string",
+      "description": "The category of the news feed."
+    },
+    "titleEx": {
+      "type": "string",
+      "description": "The title of the news feed."
+    },
+    "etag": {
+      "type": "string",
+      "description": "The etag of the news feed based on title, link, source."
+    },
+    "etag2": {
+      "type": "string",
+      "description": "The etag of the news feed based on title."
+    },
+    "source": {
+      "type": "string",
+      "description": "The source of the news feed."
+    }
+  },
+    "required": ["title", "description", "link", "pubDate", "category", "titleEx", "etag", "etag2", "source"]
+}

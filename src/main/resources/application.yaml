@@ -1,0 +1,44 @@
+
+
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include:
+                    - health
+                    - info
+                    - metrics
+                    - prometheus
+                    - env
+                    - audit-events
+                    - beans
+                    - conditions
+                    - configprops
+                    - heapdump
+                    - loggers
+                    - mappings
+                    - scheduledtasks
+                    - threaddump
+                    - httptrace
+                    - jolokia
+                    - liquibase
+                    - flyway
+                    - refresh
+                    - restart
+                    - shutdown
+                    - status
+                    - trace
+    endpoint:
+        health:
+            show-details: always
+        shutdown:
+            enabled: true
+    info:
+        git:
+            mode: full
+            properties:
+                mode: full
+        build:
+            properties:
+                mode: full

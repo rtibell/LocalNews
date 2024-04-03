@@ -1,15 +1,20 @@
 package com.tibell.integrations;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Slf4j
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.tibell.integrations.repository")
 public class Application implements CommandLineRunner {
+    @Autowired
+    private Environment env;
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
@@ -18,7 +23,17 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Starting CommandLineRunner!");
         // Magic happens here
+        logProp("spring.jpa.hibernate.ddl-auto");
+        logProp("spring.datasource.url");
+        logProp("spring.datasource.username");
+        logProp("spring.datasource.password");
+        logProp("spring.datasource.driver-class-name");
+        logProp("spring.jpa.show-sql");
 
         log.info("Done CommandLineRunner!");
+    }
+
+    private void logProp(String prop) {
+        log.info(prop + ": " + env.getProperty(prop));
     }
 }
