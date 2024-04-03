@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.Reference;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -18,9 +19,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class NewsFeedEntity {
     @Id
-    //@GeneratedValue(generator = "UUID")
-    //@Column(name = "id", nullable = false)
-    private UUID id = UUID.randomUUID();
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
 
     @Column(nullable = false)
     private String title;
@@ -32,8 +33,8 @@ public class NewsFeedEntity {
 
     private Date pubDate;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<NewsCategoryEntity> category;
+    @OneToMany(mappedBy = "newsFeed", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NewsCategoryEntity> category = new ArrayList<>();
 
     private String titleEx;
 

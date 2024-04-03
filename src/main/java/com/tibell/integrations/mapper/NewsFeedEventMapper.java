@@ -12,7 +12,7 @@ import org.mapstruct.factory.Mappers;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface NewsFeedEventMapper {
     public NewsFeedEventMapper INSTANCE = Mappers.getMapper(NewsFeedEventMapper.class);
 

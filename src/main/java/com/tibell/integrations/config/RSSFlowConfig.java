@@ -5,7 +5,9 @@ import com.tibell.integrations.mapper.NewsFeedEventMapper;
 import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
 import com.tibell.integrations.repository.NewsFeedRepository;
+import com.tibell.integrations.service.NewsCategoryService;
 import com.tibell.integrations.service.NewsFeedService;
+import com.tibell.integrations.service.impl.NewsCategoryServiceImpl;
 import com.tibell.integrations.service.impl.NewsFeedServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.aop.Advice;
@@ -56,6 +58,9 @@ public class RSSFlowConfig {
     @Autowired(required = true)
     private NewsFeedService newsFeedService;
 
+//    @Autowired(required = true)
+//    private NewsCategoryService newsCategoryService;
+
     @Bean
     public NewsFeedMapper newsFeedMapper() {
         return NewsFeedMapper.INSTANCE;
@@ -67,8 +72,14 @@ public class RSSFlowConfig {
     }
 
     @Bean
-    public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository, NewsFeedMapper newsFeedMapper, NewsFeedEventMapper newsFeedEventMapper) {
-        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper, newsFeedEventMapper);
+    public NewsCategoryService newsCategoryService() { return new NewsCategoryServiceImpl(); }
+
+    @Bean
+    public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository,
+                                           NewsFeedMapper newsFeedMapper,
+                                           NewsFeedEventMapper newsFeedEventMapper,
+                                           NewsCategoryService newsCategoryService) {
+        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper, newsFeedEventMapper, newsCategoryService);
     }
 
     @Bean
