@@ -1,5 +1,6 @@
 package com.tibell.integrations.entity;
 
+import com.tibell.integrations.converter.ListToStringConverter;
 import com.tibell.integrations.message.NewsFeed;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class NewsFeedEntity {
 
     private Date pubDate;
 
+    @Convert(converter = ListToStringConverter.class)
     private List<String> category = new ArrayList<>();
 
     private String titleEx;

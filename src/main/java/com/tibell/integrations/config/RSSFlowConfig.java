@@ -180,6 +180,17 @@ public class RSSFlowConfig {
                 .get();
     }
 
+    @Bean
+    public IntegrationFlow rssErrorFileWriterFlow() {
+        log.info("Setting up RSSErrorFileWriterFlow!");
+        return IntegrationFlow.from("rssErrorChannel")
+                .<Object, String>transform(t -> new JSONObject(t).toString())
+                .log(LoggingHandler.Level.INFO, "rss-error", m -> m.getPayload().toString())
+                .handle(Files.outboundAdapter(new File("./tmp/rss-errors"))
+                        .fileExistsMode(FileExistsMode.APPEND)
+                        .appendNewLine(true))
+                .get();
+    }
 
     @Bean
     public MessageChannel inputChannel() {
