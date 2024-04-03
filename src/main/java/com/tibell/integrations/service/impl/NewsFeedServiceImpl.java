@@ -5,12 +5,9 @@ import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
 import com.tibell.integrations.repository.NewsFeedRepository;
 import com.tibell.integrations.service.KafkaNewsFeedService;
-import com.tibell.integrations.service.NewsCategoryService;
 import com.tibell.integrations.service.NewsFeedService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -19,20 +16,16 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     private NewsFeedRepository newsFeedRepository;
     private NewsFeedEventMapper newsFeedEventMapper;
     private NewsFeedMapper newsFeedMapper;
-    private NewsCategoryService newsCategoryService;
-
 
     @Autowired
     private KafkaNewsFeedService kafkaNewsFeedService;
 
     public NewsFeedServiceImpl(NewsFeedRepository newsFeedRepository,
                                NewsFeedMapper newsFeedMapper,
-                               NewsFeedEventMapper newsFeedEventMapper,
-                               NewsCategoryService newsCategoryService) {
+                               NewsFeedEventMapper newsFeedEventMapper) {
         this.newsFeedRepository = newsFeedRepository;
         this.newsFeedMapper = newsFeedMapper;
         this.newsFeedEventMapper = newsFeedEventMapper;
-        this.newsCategoryService = newsCategoryService;
     }
 
     @Override
@@ -53,7 +46,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
         kafkaNewsFeedService.sendNewsFeedToKafka(newsFeedEventMapper.toNewsFeedEvent(newsFeed));
 
         log.info("Saving NewsFeed: {}", newsFeed.toString());
-        newsFeedRepository.save(newsFeedMapper.toNewsFeedEntity(newsFeed, newsCategoryService));
+        newsFeedRepository.save(newsFeedMapper.toNewsFeedEntity(newsFeed));
         return Boolean.TRUE;
     }
 }

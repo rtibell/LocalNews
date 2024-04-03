@@ -33,8 +33,7 @@ public class NewsFeedEntity {
 
     private Date pubDate;
 
-    @OneToMany(mappedBy = "newsFeed", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<NewsCategoryEntity> category = new ArrayList<>();
+    private List<String> category = new ArrayList<>();
 
     private String titleEx;
 
@@ -59,8 +58,6 @@ public class NewsFeedEntity {
         this.source = source;
         this.etag = etag;
         this.etag2 = etag2;
-        for (String cat : category) {
-            this.category.add(new NewsCategoryEntity(cat));
-        }
+        this.category = category;
     }
 }

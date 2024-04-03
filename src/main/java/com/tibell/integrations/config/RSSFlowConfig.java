@@ -5,19 +5,15 @@ import com.tibell.integrations.mapper.NewsFeedEventMapper;
 import com.tibell.integrations.mapper.NewsFeedMapper;
 import com.tibell.integrations.message.NewsFeed;
 import com.tibell.integrations.repository.NewsFeedRepository;
-import com.tibell.integrations.service.NewsCategoryService;
 import com.tibell.integrations.service.NewsFeedService;
-import com.tibell.integrations.service.impl.NewsCategoryServiceImpl;
 import com.tibell.integrations.service.impl.NewsFeedServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.aopalliance.aop.Advice;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpMethod;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
@@ -37,7 +33,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -58,28 +53,17 @@ public class RSSFlowConfig {
     @Autowired(required = true)
     private NewsFeedService newsFeedService;
 
-//    @Autowired(required = true)
-//    private NewsCategoryService newsCategoryService;
-
     @Bean
     public NewsFeedMapper newsFeedMapper() {
         return NewsFeedMapper.INSTANCE;
     }
 
-    @Bean
-    public NewsFeedEventMapper newsFeedEventMapper() {
-        return NewsFeedEventMapper.INSTANCE;
-    }
-
-    @Bean
-    public NewsCategoryService newsCategoryService() { return new NewsCategoryServiceImpl(); }
 
     @Bean
     public NewsFeedService newsFeedService(NewsFeedRepository newsFeedRepository,
                                            NewsFeedMapper newsFeedMapper,
-                                           NewsFeedEventMapper newsFeedEventMapper,
-                                           NewsCategoryService newsCategoryService) {
-        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper, newsFeedEventMapper, newsCategoryService);
+                                           NewsFeedEventMapper newsFeedEventMapper) {
+        return new NewsFeedServiceImpl(newsFeedRepository, newsFeedMapper, newsFeedEventMapper);
     }
 
     @Bean
