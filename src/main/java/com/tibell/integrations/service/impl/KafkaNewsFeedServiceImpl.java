@@ -27,6 +27,10 @@ public class KafkaNewsFeedServiceImpl implements KafkaNewsFeedService {
 
     @Override
     public void sendNewsFeedToKafka(NewsFeedEvent newsFeed) {
+        if (!enableKafka) {
+            //log.info("Kafka is disabled, not sending NewsFeed to Kafka");
+            return;
+        }
         int partition = newsFeed.getLink().hashCode() % 3;
         if (partition < 0) {
             partition += 3;

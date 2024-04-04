@@ -29,6 +29,13 @@ public class Application implements CommandLineRunner {
         logProp("spring.datasource.password");
         logProp("spring.datasource.driver-class-name");
         logProp("spring.jpa.show-sql");
+        logProp("slack.callback.url");
+        logProp("discord.callback.url");
+        logProp("spring.kafka.bootstrap-servers");
+        logProp("spring.kafka.producer.key-serializer");
+        logProp("spring.kafka.producer.value-serializer");
+        logProp("localnews.kafka.topic.name");
+        logProp("localnews.kafka.enabled");
 
         log.info("Done CommandLineRunner!");
     }
