@@ -68,47 +68,47 @@ public class RSSFlowConfig {
 
     @Bean
     public IntegrationFlow svdRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd", "SVD");
+        return genericRSSReaderFlow("https://www.svd.se/?service=rss", "rss-feed-svd", "SVD", "svd");
     }
 
     @Bean
     public IntegrationFlow dnRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://www.dn.se/rss/", "rss-feed-dn", "DN");
+        return genericRSSReaderFlow("https://www.dn.se/rss/", "rss-feed-dn", "DN", "dn");
     }
 
     @Bean
     public IntegrationFlow expressenRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://feeds.expressen.se/nyheter/", "rss-feed-expressen", "Expressen");
+        return genericRSSReaderFlow("https://feeds.expressen.se/nyheter/", "rss-feed-expressen", "Expressen", "expressen");
     }
 
     @Bean
     public IntegrationFlow svtRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://www.svt.se/nyheter/rss.xml", "rss-feed-svt", "SVT");
+        return genericRSSReaderFlow("https://www.svt.se/nyheter/rss.xml", "rss-feed-svt", "SVT", "svt");
     }
 
     @Bean
     public IntegrationFlow aftonbladedNewsRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/senastenytt/", "rss-feed-aftonbladet-news", "Aftonbladet-News");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/senastenytt/", "rss-feed-aftonbladet-news", "Aftonbladet-News", "aftonbladet");
     }
 
     @Bean
     public IntegrationFlow aftonbladedEntertRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/nojesbladet/", "rss-feed-aftonbladet-entertainment", "Aftonbladet-Entertainment");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/nojesbladet/", "rss-feed-aftonbladet-entertainment", "Aftonbladet-Entertainment", "aftonbladet");
     }
 
     @Bean
     public IntegrationFlow aftonbladedCultureRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/kultur/", "rss-feed-aftonbladet-culture", "Aftonbladet-Culture");
+        return genericRSSReaderFlow("https://rss.aftonbladet.se/rss2/small/pages/sections/kultur/", "rss-feed-aftonbladet-culture", "Aftonbladet-Culture", "aftonbladet");
     }
 
     @Bean
     public IntegrationFlow wpPolicticsRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://www.di.se/rss", "rss-feed-di", "DI");
+        return genericRSSReaderFlow("https://www.di.se/rss", "rss-feed-di", "DI", "di");
     }
 
     @Bean
     public IntegrationFlow nytTechRSSReaderFlow() throws MalformedURLException {
-        return genericRSSReaderFlow("https://www.sydsvenskan.se/rss.xml", "rss-feed-nyt-sydsvenskan", "SydSvenskan");
+        return genericRSSReaderFlow("https://www.sydsvenskan.se/rss.xml", "rss-feed-nyt-sydsvenskan", "SydSvenskan", "sydsvenskan");
     }
 
 //    @Bean
@@ -132,11 +132,11 @@ public class RSSFlowConfig {
 
     public String createSlackJsonPayload(NewsFeed newsFeed) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return String.format("{ \"text\": \"%s: %s - %s [%s]\" } ",
+        return String.format("{ \"text\": \"%s: [%s] %s - %s\" } ",
                 sdf.format(newsFeed.getPubDate()),
+                newsFeed.getTicker(),
                 newsFeed.getTitle(),
-                newsFeed.getDescription(),
-                newsFeed.getLink());
+                newsFeed.getDescription());
     }
 
     @Bean
@@ -160,10 +160,11 @@ public class RSSFlowConfig {
 
     public String createDiscordJsonPayload(NewsFeed newsFeed) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return String.format("{ \"content\": \"%s\", \"tts\": false, \"embeds\": [{\"title\": \"%s\", \"description\": \"%s\", \"url\": \"%s\", \"color\": 5814783 }] } ",
+        return String.format("{ \"content\": \"%s\", \"tts\": false, \"embeds\": [{\"title\": \"%s\", \"description\": \"%s (%s)\", \"url\": \"%s\", \"color\": 5814783 }] } ",
                 sdf.format(newsFeed.getPubDate()),
                 newsFeed.getTitle(),
                 newsFeed.getDescription(),
+                newsFeed.getTicker(),
                 newsFeed.getLink());
     }
 
@@ -204,12 +205,13 @@ public class RSSFlowConfig {
         return new PublishSubscribeChannel();
     }
 
-    public IntegrationFlow genericRSSReaderFlow(String url, String metaKey, String source) throws MalformedURLException {
+    public IntegrationFlow genericRSSReaderFlow(String url, String metaKey, String source, String ticker) throws MalformedURLException {
         int rndTime = rnd.nextInt(25) + 67;
         log.info("Setting up {} RSSReaderFlow! MetaKey={} delay={}", source, metaKey, rndTime);
         return IntegrationFlow.from(new FeedEntryMessageSource(new UrlResource(url), metaKey), e -> e.poller(Pollers.fixedDelay(rndTime * 1000)))
-                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(t, source))
+                .<SyndEntry, NewsFeed>transform(t -> new NewsFeed(t, source, ticker))
                 .enrichHeaders(h -> h.header("source", source, true)) // Add etag header to message
+                .enrichHeaders(h -> h.header("ticker", ticker, true))
                 .filter(newsFeedService::saveNewsFeed)
                 .filter(newsFeedService::checkUnique)
                 .channel("rssChannel")

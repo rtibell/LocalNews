@@ -46,18 +46,20 @@ public class NewsFeedEntity {
     private String etag2;
 
     private String source;
+    private String ticker;
 
     @Column(nullable = false)
     private Date creation_date = new Date();
 
 
-    public NewsFeedEntity(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String etag, String etag2, String source) {
+    public NewsFeedEntity(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String etag, String etag2, String source, String ticker) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.pubDate = pubDate;
         this.titleEx = titleEx;
         this.source = source;
+        this.ticker = ticker;
         this.etag = etag;
         this.etag2 = etag2;
         this.category = category;

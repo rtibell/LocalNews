@@ -24,8 +24,9 @@ public class NewsFeed {
     private final String etag;
     private final String etag2;
     private final String source;
+    private final String ticker;
 
-    public NewsFeed(SyndEntry entry, String source) {
+    public NewsFeed(SyndEntry entry, String source, String ticker) {
         this.title = NewsFeed.cleanUp(entry.getTitle());
         if (entry.getDescription() != null)  this.description = NewsFeed.cleanUp(entry.getDescription().getValue());
         else this.description = "";
@@ -36,13 +37,14 @@ public class NewsFeed {
         if (entry.getTitleEx() != null)  this.titleEx = NewsFeed.cleanUp(entry.getTitleEx().getValue());
         else this.titleEx = "";
         this.source = source;
+        this.ticker = ticker;
         this.etag = NewsFeed.calcETAG(title, link, source);
         this.etag2 = NewsFeed.calcETAG2(title);
         log.info("NewsFeed Etag: {}", this.etag);
     }
 
     @Default
-    public NewsFeed(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String source) {
+    public NewsFeed(String title, String description, String link, Date pubDate, List<String> category, String titleEx, String source, String ticker) {
         this.title = title;
         this.description = description;
         this.link = link;
@@ -50,6 +52,7 @@ public class NewsFeed {
         this.category = category;
         this.titleEx = titleEx;
         this.source = source;
+        this.ticker = ticker;
         this.etag = NewsFeed.calcETAG(title, link, source);
         this.etag2 = NewsFeed.calcETAG2(title);
         log.info("Etag: {}", this.etag);
