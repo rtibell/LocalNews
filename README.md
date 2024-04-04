@@ -47,3 +47,6 @@ mysql> grant all on db_example.* to 'springuser'@'%'; -- Gives all privileges to
 
 ## Json Schema
 https://json-schema.org/understanding-json-schema/reference
+
+## Kafka
+https://docs.confluent.io/platform/current/platform-quickstart.html#ce-docker-quickstart

@@ -50,6 +50,7 @@ public class NewsFeedEvent {
     @JsonProperty("source")
     private final String source;
 
+
     /**
      * This method is used to convert the NewsFeedEvent object to a JSON string.
      * @return String This returns the JSON string representation of the NewsFeedEvent object.
