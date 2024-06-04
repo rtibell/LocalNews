@@ -48,6 +48,15 @@ public class NewsFeedEntity {
     private String source;
     private String ticker;
 
+    @Column(name = "title_sentiment", nullable = true)
+    private String titleSentiment = "NEUTRAL";
+    @Column(name = "title_sentiment_score", nullable = true)
+    private Float titleSentimentScore = 0.0f;
+    @Column(name = "descr_sentiment", nullable = true)
+    private String descriptionSentiment = "NEUTRAL";
+    @Column(name = "descr_sentiment_score", nullable = true)
+    private Float descriptionSentimentScore = 0.0f;
+
     @Column(nullable = false)
     private Date creation_date = new Date();
 
@@ -63,5 +72,21 @@ public class NewsFeedEntity {
         this.etag = etag;
         this.etag2 = etag2;
         this.category = category;
+    }
+
+    public void setTitleSentiment(String titleSentiment) {
+        this.titleSentiment = titleSentiment;
+    }
+
+    public void setTitleSentimentScore(Float titleSentimentScore) {
+        this.titleSentimentScore = titleSentimentScore;
+    }
+
+    public void setDescriptionSentiment(String descriptionSentiment) {
+        this.descriptionSentiment = descriptionSentiment;
+    }
+
+    public void setDescriptionSentimentScore(Float descriptionSentimentScore) {
+        this.descriptionSentimentScore = descriptionSentimentScore;
     }
 }

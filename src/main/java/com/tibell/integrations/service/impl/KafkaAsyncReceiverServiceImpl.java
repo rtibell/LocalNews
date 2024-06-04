@@ -6,8 +6,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-@Slf4j
-@Service
+// Temporarily commented out
+//@Slf4j
+//@Service
 public class KafkaAsyncReceiverServiceImpl implements KafkaAsyncReceiverService {
 //    @Async("taskExecutor")
 //    @Scheduled(fixedRate = 15000)

@@ -14,8 +14,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-@Slf4j
-@Service
+// Temporarily commented out
+//@Slf4j
+//@Service
 public class KafkaNewsFeedServiceImpl implements KafkaNewsFeedService {
     private KafkaTemplate<String, NewsFeedEvent> kafkaTemplate;
 
@@ -25,10 +26,11 @@ public class KafkaNewsFeedServiceImpl implements KafkaNewsFeedService {
     @Value("${localnews.kafka.enabled:false}")
     private boolean enableKafka;
 
-    @Autowired
-    public KafkaNewsFeedServiceImpl(KafkaTemplate<String, NewsFeedEvent> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    // Temporarily commented out
+//    @Autowired
+//    public KafkaNewsFeedServiceImpl(KafkaTemplate<String, NewsFeedEvent> kafkaTemplate) {
+//        this.kafkaTemplate = kafkaTemplate;
+//    }
 
     @Override
     public void sendNewsFeedToKafka(NewsFeedEvent newsFeed) {
@@ -40,8 +42,8 @@ public class KafkaNewsFeedServiceImpl implements KafkaNewsFeedService {
         if (partition < 0) {
             partition += 3;
         }
-        log.info("Sending NewsFeed to Kafka topic {}, partition {}, key {}, payload {}", topic, partition, newsFeed.getEtag(), newsFeed);
-        log.info("Event {}", newsFeed.toJson());
+        //log.info("Sending NewsFeed to Kafka topic {}, partition {}, key {}, payload {}", topic, partition, newsFeed.getEtag(), newsFeed);
+        //log.info("Event {}", newsFeed.toJson());
         kafkaTemplate.send(topic, partition, newsFeed.getEtag(), newsFeed);
         //kafkaTemplate.send(topic, 0, newsFeed.getEtag(), newsFeed.toJson());
 
@@ -52,7 +54,11 @@ public class KafkaNewsFeedServiceImpl implements KafkaNewsFeedService {
     @KafkaListener(topics = "#{'${localnews.kafka.topic.name}'.split(',')}", groupId = "my-group")
     @Override
     public void receiveNewsFeedFromKafka(ConsumerRecord<String, NewsFeedEvent> record, Acknowledgment acknowledgment) {
-        log.info("Received message: {} with metadata [partition={}, offset={}] ", record.value(), record.partition(), record.offset());
+        if (!enableKafka) {
+            //log.info("Kafka is disabled, not sending NewsFeed to Kafka");
+            return;
+        }
+        //log.info("Received message: {} with metadata [partition={}, offset={}] ", record.value(), record.partition(), record.offset());
         acknowledgment.acknowledge();
     }
 

@@ -20,8 +20,9 @@ public class Application implements CommandLineRunner {
     @Autowired
     private Environment env;
 
-    @Autowired
-    private KafkaAsyncReceiverService kafkaAsyncReceiverService;
+    // Temporarily commented out
+//    @Autowired
+//    private KafkaAsyncReceiverService kafkaAsyncReceiverService;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

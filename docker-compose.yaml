@@ -26,6 +26,15 @@ services:
       - mysql-net
       - kafka-net
 
+  sentiment_analysis:
+    image: tibell/sentiment:latest
+    hostname: sentimentanalysis
+    container_name: sentiment_analysis
+    ports:
+      - "8090:8090"
+    networks:
+      - mysql-net
+
 networks:
   mysql-net:
     external: true
